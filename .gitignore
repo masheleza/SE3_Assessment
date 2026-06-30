@@ -10,7 +10,7 @@
 [Rr]elease/
 **/bin/
 **/obj/
-**/.vs/
+.vs/
 
 # Package management directories
 packages/

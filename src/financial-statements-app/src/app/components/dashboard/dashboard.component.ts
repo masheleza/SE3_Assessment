@@ -14,9 +14,18 @@ import { ConnectionState } from '../../models/statement.models';
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   connectionState: ConnectionState = { isConnected: false };
+  menuOpen = false;
   private readonly destroy$ = new Subject<void>();
 
   constructor(private signalR: SignalRService) {}
+
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  closeMenu(): void {
+    this.menuOpen = false;
+  }
 
   ngOnInit(): void {
     this.signalR.connectionState$

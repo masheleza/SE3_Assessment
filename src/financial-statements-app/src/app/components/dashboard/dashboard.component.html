@@ -1,28 +1,50 @@
 <div class="dashboard">
-  <header class="dashboard__header">
-    <div class="header__brand">
-      <h1>Financial Statements</h1>
-    </div>
-    <div class="header__status">
-      <span class="status-dot" [class.status-dot--connected]="connectionState.isConnected"></span>
-      <span class="status-text">
-        {{ connectionState.isConnected ? 'Live' : 'Connecting...' }}
-      </span>
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="brand" (click)="closeMenu()">
+        <svg class="brand__mark" viewBox="0 0 40 28" aria-hidden="true">
+          <path d="M20 2c-7 0-13 5-13 12 0 4 2 7 5 9-4-1-8-4-8-9C4 6 11 0 20 0v2z" fill="#0a5c63"/>
+          <path d="M20 26c7 0 13-5 13-12 0-4-2-7-5-9 4 1 8 4 8 9 0 8-7 14-16 14v-2z" fill="#e4002b"/>
+        </svg>
+        <span class="brand__name">CAPITEC</span>
+      </a>
+
+      <nav class="topbar__actions">
+        <a class="topbar__signin">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="icon-shield">
+            <path d="M12 2 4 5v6c0 5 3.4 8.6 8 11 4.6-2.4 8-6 8-11V5l-8-3z" fill="none" stroke="#1b6ef3" stroke-width="1.6"/>
+            <circle cx="12" cy="10" r="2" fill="#1b6ef3"/>
+            <path d="M12 12v3" stroke="#1b6ef3" stroke-width="1.6"/>
+          </svg>
+          <span>Sign in</span>
+        </a>
+
+        <span class="conn" [class.conn--on]="connectionState.isConnected"
+              [attr.title]="connectionState.isConnected ? 'Live' : 'Connecting...'">
+          <span class="conn__dot"></span>
+        </span>
+
+        <br/>
+      </nav>
     </div>
   </header>
 
   <main class="dashboard__main">
-    <aside class="sidebar">
+    <!-- Backdrop for mobile drawer -->
+    <div class="backdrop" [class.backdrop--show]="menuOpen" (click)="closeMenu()"></div>
+
+    <aside class="sidebar" [class.sidebar--open]="menuOpen">
       <nav class="sidebar__nav">
-        <a class="nav-item nav-item--active">
+        <a class="nav-item nav-item--active" (click)="closeMenu()">
           <span class="nav-icon">&#x1F4CB;</span>
           Statements
         </a>
-        <a class="nav-item">
+        <a class="nav-item" (click)="closeMenu()">
           <span class="nav-icon">&#x1F4CA;</span>
           Reports
         </a>
-        <a class="nav-item">
+        <a class="nav-item" (click)="closeMenu()">
           <span class="nav-icon">&#x2699;&#xFE0F;</span>
           Settings
         </a>

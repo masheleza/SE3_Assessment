@@ -55,7 +55,18 @@ public sealed class DocumentRepositoryTests : IDisposable
         await _db.SaveChangesAsync();
         _db.ChangeTracker.Clear();
 
-        var updated = record with { Status = DocumentStatus.Ready, StoragePath = "path/to/doc.pdf" };
+        var updated = new DocumentRecord
+        {
+            Id = record.Id,
+            UserId = record.UserId,
+            AccountId = record.AccountId,
+            Type = record.Type,
+            PeriodFrom = record.PeriodFrom,
+            PeriodTo = record.PeriodTo,
+            CreatedAt = record.CreatedAt,
+            Status = DocumentStatus.Ready,
+            StoragePath = "path/to/doc.pdf"
+        };
         await _sut.UpsertAsync(updated);
 
         var stored = await _db.Documents.FindAsync(record.Id);

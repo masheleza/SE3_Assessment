@@ -23,3 +23,7 @@ packages/
 
 # Roslyn cache directories
 .vs- Roslyn/
+/src/FinancialStatements.BFF/.vs
+/src/FinancialStatements.BFF/.vs
+/src/financial-statements-app/node_modules
+/src/financial-statements-app/.angular/cache/17.3.17

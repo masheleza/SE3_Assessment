@@ -25,6 +25,9 @@ Infrastructure/
     DocumentDbContext.cs        EF Core context with index configuration
   Repositories/
     DocumentRepository.cs       IDocumentRepository — upsert and bulk-status update
+Migrations/
+  *_InitialCreate.cs            EF Core migration — creates the Documents table
+  DocumentDbContextModelSnapshot.cs   Current model snapshot
 Models/
   DocumentModels.cs             DocumentRecord EF entity
 Services/
@@ -89,7 +92,7 @@ Entity: `DocumentRecord`
 | `ErrorMessage` | `nvarchar(2048)` | Populated on failure |
 | `CreatedAt / CompletedAt` | `datetimeoffset` | |
 
-EF Core migrations are applied automatically via `db.Database.MigrateAsync()` in `Program.cs`.
+EF Core migrations are applied automatically via `db.Database.MigrateAsync()` in `Program.cs`. The initial schema is defined by the `InitialCreate` migration under `Migrations/`, which creates the `Documents` table along with the `IX_Documents_UserId` and `IX_Documents_UserId_AccountId` indexes.
 
 ## Replacing the PDF stub
 
@@ -117,7 +120,7 @@ public Task<byte[]> GenerateStatementAsync(StatementRequestedEvent request, Canc
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=FinancialStatements;...",
+    "DefaultConnection": "Server=localhost,1433;Database=FinancialStatements;User Id=<user>;Password=<password>;TrustServerCertificate=True",
     "Redis": "localhost:6379"
   },
   "Sqs": {
@@ -163,6 +166,7 @@ Test coverage includes: `DocumentService` cache-hit/miss paths and processing su
 | `FinancialStatements.Models` | Shared enums, DTOs, and domain events |
 | `AWSSDK.SQS` | Consume request queue; publish response events |
 | `AWSSDK.S3` | Upload and download generated PDFs |
+| `AWSSDK.Extensions.NETCore.Setup` | DI integration for AWS clients (`AddDefaultAWSOptions`, `AddAWSService<T>`) |
 | `Microsoft.EntityFrameworkCore.SqlServer` | Persistent document metadata |
 | `StackExchange.Redis` | Cache-aside document content |
 | `Swashbuckle.AspNetCore` | Swagger UI |

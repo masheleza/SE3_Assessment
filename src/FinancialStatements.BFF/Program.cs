@@ -7,6 +7,8 @@ using FinancialStatements.BFF.Orchestrators;
 using FinancialStatements.BFF.Services;
 using FinancialStatements.BFF.Workers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -42,12 +44,37 @@ builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
 // ── Background Worker (SQS consumer for document-ready events) ────────────────
 builder.Services.AddHostedService<DocumentReadyConsumer>();
 
-// ── Authentication ─────────────────────────────────────────────────────────────
+// ── Authentication (self-issued RS256 JWT) ──────────────────────────────────────
+var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
+builder.Services.AddSingleton(jwtOptions);
+
+var authOptions = builder.Configuration.GetSection("Auth").Get<AuthOptions>() ?? new AuthOptions();
+builder.Services.AddSingleton(authOptions);
+
+// Single token-service instance shared by DI and the JwtBearer validation setup.
+IJwtTokenService tokenService = new JwtTokenService(jwtOptions, builder.Environment);
+builder.Services.AddSingleton(tokenService);
+builder.Services.AddSingleton<IPasswordHasher<AuthUser>, PasswordHasher<AuthUser>>();
+builder.Services.AddSingleton<IUserStore, ConfigurationUserStore>();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = builder.Configuration["Jwt:Authority"];
-        options.Audience = builder.Configuration["Jwt:Audience"];
+        // Tokens are signed/validated locally with our RSA key pair.
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = tokenService.Issuer,
+            ValidateAudience = true,
+            ValidAudience = tokenService.Audience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = tokenService.PublicSigningKey,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30),
+            NameClaimType = JwtTokenService.NameClaimType
+        };
+
         options.Events = new JwtBearerEvents
         {
             // Allow SignalR to pass JWT in query string
@@ -78,6 +105,31 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "Financial Statements BFF", Version = "v1" });
+
+    // Enable Bearer auth in Swagger UI so protected endpoints are testable.
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Paste the access token returned by POST /api/auth/login."
+    });
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
 
 // ── CORS ───────────────────────────────────────────────────────────────────────

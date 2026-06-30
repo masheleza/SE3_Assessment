@@ -120,7 +120,7 @@ public Task<byte[]> GenerateStatementAsync(StatementRequestedEvent request, Canc
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost,1433;Database=FinancialStatements;User Id=statement;TrustServerCertificate=True",
+    "DefaultConnection": "Server=localhost,1433;Database=FinancialStatements;User Id=sa;TrustServerCertificate=True",
     "Redis": "localhost:6379"
   },
   "Sqs": {
@@ -137,10 +137,10 @@ The `DefaultConnection` string in `appsettings.json` deliberately omits the SQL 
 ```bash
 # Local development — .NET user secrets (stored outside the repo)
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" \
-  "Server=localhost,1433;Database=FinancialStatements;User Id=statement;Password=<password>;TrustServerCertificate=True"
+  "Server=localhost,1433;Database=FinancialStatements;User Id=sa;Password=St@t3m3n5@!123;TrustServerCertificate=True"
 
 # Other environments — environment variable (double underscore = config nesting)
-export ConnectionStrings__DefaultConnection="...;Password=<password>;..."
+export ConnectionStrings__DefaultConnection="...;Password=St@t3m3n5@!123;..."
 ```
 
 Configuration layering means the secret/env value overrides the password-less entry in `appsettings.json` at startup.

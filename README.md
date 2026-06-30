@@ -69,13 +69,13 @@ Verify:
 docker ps
 
 3. Run SQL Server
-docker run -d --name sqlserver -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=YourStrong@Pass123" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest
+docker run -d --name sqlserver -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=St@t3m3n5@!123" -p 1433:1433 mcr.microsoft.com/mssql/server:2022-latest
 
 Connect using:
 
 Server: localhost,1433
 User: sa
-Password: YourStrong@Pass123
+Password: St@t3m3n5@!123
 
 4. Run LocalStack (SQS + S3)
 docker run -d --name localstack -p 4566:4566 -e SERVICES=sqs,s3 -e DEBUG=1 localstack/localstack:latest

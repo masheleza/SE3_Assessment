@@ -4,6 +4,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>FinancialStatements.DocumentApi</RootNamespace>
+    <UserSecretsId>052b3d4e-8986-41f5-aff6-45cce545072e</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\FinancialStatements.Models\FinancialStatements.Models.csproj" />

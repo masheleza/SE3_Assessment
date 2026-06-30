@@ -120,7 +120,7 @@ public Task<byte[]> GenerateStatementAsync(StatementRequestedEvent request, Canc
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost,1433;Database=FinancialStatements;User Id=<user>;Password=<password>;TrustServerCertificate=True",
+    "DefaultConnection": "Server=localhost,1433;Database=FinancialStatements;User Id=statement;TrustServerCertificate=True",
     "Redis": "localhost:6379"
   },
   "Sqs": {
@@ -131,6 +131,19 @@ public Task<byte[]> GenerateStatementAsync(StatementRequestedEvent request, Canc
   }
 }
 ```
+
+The `DefaultConnection` string in `appsettings.json` deliberately omits the SQL password — it is never committed. Supply the password (or the full connection string) out-of-band:
+
+```bash
+# Local development — .NET user secrets (stored outside the repo)
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" \
+  "Server=localhost,1433;Database=FinancialStatements;User Id=statement;Password=<password>;TrustServerCertificate=True"
+
+# Other environments — environment variable (double underscore = config nesting)
+export ConnectionStrings__DefaultConnection="...;Password=<password>;..."
+```
+
+Configuration layering means the secret/env value overrides the password-less entry in `appsettings.json` at startup.
 
 The response queue URL is not configured here — it arrives per-message inside `StatementRequestedEvent.ResponseQueueUrl`, allowing the BFF to route responses to its own queue without the Document API needing to know about it.
 

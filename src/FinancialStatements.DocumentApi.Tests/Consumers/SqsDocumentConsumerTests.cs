@@ -89,7 +89,6 @@ public sealed class SqsDocumentConsumerTests
     [Fact]
     public async Task WhenMessageDeserializationFails_DoesNotCallDocumentService()
     {
-        var pollCount = 0;
         var secondPollReached = new TaskCompletionSource<bool>();
 
         _sqs.SetupSequence(s => s.ReceiveMessageAsync(
@@ -112,7 +111,6 @@ public sealed class SqsDocumentConsumerTests
     [Fact]
     public async Task WhenProcessingFails_DoesNotDeleteMessage()
     {
-        var pollCount = 0;
         var secondPollReached = new TaskCompletionSource<bool>();
 
         _sqs.SetupSequence(s => s.ReceiveMessageAsync(

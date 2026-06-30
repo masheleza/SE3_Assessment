@@ -43,7 +43,14 @@ public sealed class SqsDocumentConsumer : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Polling error, retrying in 5s");
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    break;
+                }
             }
         }
     }

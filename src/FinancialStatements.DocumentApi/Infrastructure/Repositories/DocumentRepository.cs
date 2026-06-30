@@ -35,13 +35,15 @@ public sealed class DocumentRepository : IDocumentRepository
     public async Task UpdateStatusAsync(
         Guid id, DocumentStatus status, string? storagePath, string? error, CancellationToken ct = default)
     {
-        await _db.Documents
-            .Where(d => d.Id == id)
-            .ExecuteUpdateAsync(s => s
-                .SetProperty(d => d.Status, status)
-                .SetProperty(d => d.StoragePath, storagePath)
-                .SetProperty(d => d.ErrorMessage, error)
-                .SetProperty(d => d.CompletedAt, status == DocumentStatus.Ready ? DateTimeOffset.UtcNow : (DateTimeOffset?)null),
-            ct);
+        var record = await _db.Documents.FirstOrDefaultAsync(d => d.Id == id, ct);
+        if (record is null)
+            return;
+
+        record.Status = status;
+        record.StoragePath = storagePath;
+        record.ErrorMessage = error;
+        record.CompletedAt = status == DocumentStatus.Ready ? DateTimeOffset.UtcNow : null;
+
+        await _db.SaveChangesAsync(ct);
     }
 }

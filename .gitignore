@@ -9,13 +9,17 @@
 # Build results (Compiled binaries and build directories)
 [Db]ebug/
 [Rr]elease/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
 **/bin/
+
 **/obj/
+
 
 # Package management directories
 packages/
 
 # Roslyn cache directories
 .vs- Roslyn/
-
-

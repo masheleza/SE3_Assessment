@@ -31,8 +31,8 @@ public sealed class RedisCacheService : ICacheService
         return JsonSerializer.Deserialize<T>(value.ToString());
     }
 
-    public Task RemoveAsync(string key, CancellationToken ct = default) =>
-        _db.KeyDeleteAsync(key).AsTask();
+    public async Task RemoveAsync(string key, CancellationToken ct = default) =>
+       await _db.KeyDeleteAsync(key);
 
     public async Task<bool> ExistsAsync(string key, CancellationToken ct = default) =>
         await _db.KeyExistsAsync(key);

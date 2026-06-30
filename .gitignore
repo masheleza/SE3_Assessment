@@ -1,0 +1,20 @@
+﻿# User-specific files (caches, window layouts, history)
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results (Compiled binaries and build directories)
+[Db]ebug/
+[Rr]elease/
+**/bin/
+**/obj/
+**/.vs/
+
+# Package management directories
+packages/
+
+# Roslyn cache directories
+.vs- Roslyn/
+

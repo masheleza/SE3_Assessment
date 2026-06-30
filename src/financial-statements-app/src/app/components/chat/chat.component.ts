@@ -97,17 +97,11 @@ export class ChatComponent implements OnInit, OnDestroy {
           this.isRequestingStatement = false;
           // Real-time notification arrives via SignalR (DocumentReadyConsumer → SignalR Hub)
         },
-        error: (err) => {
+        error: () => {
           this.isRequestingStatement = false;
-          const errMsg: ChatMessage = {
-            id: crypto.randomUUID(),
-            userId: 'system',
-            content: `Error: ${err?.error ?? 'Could not submit request. Please try again.'}`,
-            type: 'Error',
-            sentAt: new Date().toISOString()
-          };
-          this.messages.push(errMsg);
-          this.scrollToBottom();
+          this.showError(
+            "We couldn't submit your statement request right now. Please try again in a moment."
+          );
         }
       });
   }
@@ -117,14 +111,33 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.statementService
       .downloadDocument(token)
       .pipe(takeUntil(this.destroy$))
-      .subscribe(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `statement-${link.documentId}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
+      .subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `statement-${link.documentId}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+        },
+        error: () => {
+          this.showError(
+            "We couldn't retrieve your statement right now. The link may have expired. Please request a new statement and try again."
+          );
+        }
       });
+  }
+
+  private showError(message: string): void {
+    const errMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      userId: 'system',
+      content: message,
+      type: 'Error',
+      sentAt: new Date().toISOString()
+    };
+    this.messages.push(errMsg);
+    this.scrollToBottom();
   }
 
   private scrollToBottom(): void {

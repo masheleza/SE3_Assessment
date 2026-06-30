@@ -1,0 +1,67 @@
+<div class="chat-container">
+  <!-- Message list -->
+  <div class="message-list" #messageList>
+    @for (msg of messages; track msg.id) {
+      <div class="message" [class]="'message--' + msg.type.toLowerCase()" [class.message--mine]="msg.userId === 'me'">
+
+        @if (msg.type === 'SecureLink' && msg.secureLink) {
+          <app-secure-link
+            [link]="msg.secureLink"
+            [expiryWarning]="expiringLinks.get(msg.secureLink.linkUrl.split('/').pop()!)"
+            (download)="downloadLink(msg.secureLink!)">
+          </app-secure-link>
+        } @else {
+          <div class="message__bubble">
+            <p class="message__content">{{ msg.content }}</p>
+            <span class="message__time">{{ msg.sentAt | date:'HH:mm' }}</span>
+          </div>
+        }
+
+      </div>
+    }
+
+    @if (messages.length === 0) {
+      <div class="empty-state">
+        <p>Request a financial statement to get started.</p>
+      </div>
+    }
+  </div>
+
+  <!-- Statement request form -->
+  <div class="request-panel">
+    <form [formGroup]="statementForm" (ngSubmit)="requestStatement()" class="request-form">
+      <div class="request-form__row">
+        <label>
+          Account
+          <input formControlName="accountId" placeholder="Account ID" />
+        </label>
+
+        <label>
+          Type
+          <select formControlName="type">
+            @for (t of statementTypes; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          From
+          <input type="date" formControlName="from" />
+        </label>
+
+        <label>
+          To
+          <input type="date" formControlName="to" />
+        </label>
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="statementForm.invalid || isRequestingStatement"
+        class="btn btn--primary">
+        @if (isRequestingStatement) { Requesting... } @else { Request Statement }
+      </button>
+    </form>
+  </div>
+</div>

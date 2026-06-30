@@ -1,0 +1,30 @@
+<div class="secure-link" [class.secure-link--expired]="isExpired" [class.secure-link--expiring]="(expiryWarning ?? 99) <= 5 && !isExpired">
+  <div class="secure-link__icon">
+    @if (isExpired) {
+      <span class="icon icon--expired">&#x1F512;</span>
+    } @else {
+      <span class="icon icon--active">&#x1F4C4;</span>
+    }
+  </div>
+
+  <div class="secure-link__body">
+    <p class="secure-link__title">Financial Statement Ready</p>
+    <p class="secure-link__subtitle">Document ID: {{ link.documentId | slice:0:12 }}...</p>
+
+    <div class="secure-link__timer" [class.secure-link__timer--warning]="(expiryWarning ?? 99) <= 5">
+      @if (!isExpired) {
+        <span class="timer-label">Expires in</span>
+        <span class="timer-value">{{ timeRemaining }}</span>
+      } @else {
+        <span class="timer-label expired">This link has expired</span>
+      }
+    </div>
+  </div>
+
+  <button
+    class="secure-link__btn"
+    [disabled]="isExpired"
+    (click)="onDownload()">
+    @if (isExpired) { Expired } @else { Download }
+  </button>
+</div>

@@ -1,0 +1,36 @@
+<div class="dashboard">
+  <header class="dashboard__header">
+    <div class="header__brand">
+      <h1>Financial Statements</h1>
+    </div>
+    <div class="header__status">
+      <span class="status-dot" [class.status-dot--connected]="connectionState.isConnected"></span>
+      <span class="status-text">
+        {{ connectionState.isConnected ? 'Live' : 'Connecting...' }}
+      </span>
+    </div>
+  </header>
+
+  <main class="dashboard__main">
+    <aside class="sidebar">
+      <nav class="sidebar__nav">
+        <a class="nav-item nav-item--active">
+          <span class="nav-icon">&#x1F4CB;</span>
+          Statements
+        </a>
+        <a class="nav-item">
+          <span class="nav-icon">&#x1F4CA;</span>
+          Reports
+        </a>
+        <a class="nav-item">
+          <span class="nav-icon">&#x2699;&#xFE0F;</span>
+          Settings
+        </a>
+      </nav>
+    </aside>
+
+    <section class="content">
+      <app-chat></app-chat>
+    </section>
+  </main>
+</div>

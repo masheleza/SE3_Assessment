@@ -1,0 +1,64 @@
+version: '3.9'
+
+services:
+  # ── Infrastructure ───────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    command: redis-server --save 60 1 --loglevel warning
+    volumes: [redis_data:/data]
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "Dev@12345!"
+      ACCEPT_EULA: "Y"
+    ports: ["1433:1433"]
+    volumes: [sql_data:/var/opt/mssql]
+
+  localstack:
+    image: localstack/localstack:3
+    ports: ["4566:4566"]
+    environment:
+      SERVICES: sqs,s3
+      AWS_DEFAULT_REGION: eu-west-1
+      DEBUG: 0
+    volumes: [localstack_data:/var/lib/localstack]
+
+  # ── Backend for Frontend ─────────────────────────────────────────────
+  bff:
+    build:
+      context: ./src/FinancialStatements.BFF
+      dockerfile: Dockerfile
+    ports: ["7001:8080"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Redis: redis:6379
+      Sqs__RequestQueueUrl: http://localstack:4566/000000000000/financial-statements-requests
+      Sqs__ResponseQueueUrl: http://localstack:4566/000000000000/financial-statements-responses
+      BFF__BaseUrl: http://localhost:7001
+      DocumentApi__BaseUrl: http://document-api:8080
+      AWS__ServiceURL: http://localstack:4566
+      AWS__Region: eu-west-1
+    depends_on: [redis, localstack]
+
+  # ── Document API ─────────────────────────────────────────────────────
+  document-api:
+    build:
+      context: ./src/FinancialStatements.DocumentApi
+      dockerfile: Dockerfile
+    ports: ["7002:8080"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=FinancialStatements;User Id=sa;Password=Dev@12345!;TrustServerCertificate=True"
+      ConnectionStrings__Redis: redis:6379
+      Sqs__RequestQueueUrl: http://localstack:4566/000000000000/financial-statements-requests
+      Storage__BucketName: financial-statements-documents
+      AWS__ServiceURL: http://localstack:4566
+      AWS__Region: eu-west-1
+    depends_on: [redis, sqlserver, localstack]
+
+volumes:
+  redis_data:
+  sql_data:
+  localstack_data:

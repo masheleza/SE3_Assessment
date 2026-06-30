@@ -1,4 +1,6 @@
 ﻿# User-specific files (caches, window layouts, history)
+dist
+
 .vs/
 **/.vs/
 *.suo

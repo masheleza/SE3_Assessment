@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { SignalRService } from '../../services/signalr.service';
+import { AuthService } from '../../services/auth.service';
 import { ChatComponent } from '../chat/chat.component';
 import { ConnectionState } from '../../models/statement.models';
 
@@ -17,7 +18,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   menuOpen = false;
   private readonly destroy$ = new Subject<void>();
 
-  constructor(private signalR: SignalRService) {}
+  constructor(private signalR: SignalRService, private auth: AuthService) {}
 
   toggleMenu(): void {
     this.menuOpen = !this.menuOpen;
@@ -32,9 +33,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(state => (this.connectionState = state));
 
-    // In production, retrieve token from your AuthService
-    const mockToken = 'your-jwt-token-here';
-    this.signalR.connect(mockToken).catch(console.error);
+    // The app logs in on startup (APP_INITIALIZER), so the token is ready here.
+    const token = this.auth.accessToken;
+    if (token) {
+      this.signalR.connect(token).catch(console.error);
+    } else {
+      console.error('No access token available; SignalR connection skipped.');
+    }
   }
 
   ngOnDestroy(): void {

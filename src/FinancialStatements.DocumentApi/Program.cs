@@ -45,11 +45,24 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 
-// Apply EF migrations at startup
+// Apply EF migrations at startup, and seed test data in Development
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<DocumentDbContext>();
     await db.Database.MigrateAsync();
+
+    if (app.Environment.IsDevelopment() && !await db.Documents.AnyAsync())
+    {
+        try
+        {
+            var seeder = scope.ServiceProvider.GetRequiredService<IDocumentService>();
+            await seeder.SeedTestStatementsAsync(10);
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(ex, "Development data seeding failed; continuing startup");
+        }
+    }
 }
 
 if (app.Environment.IsDevelopment())

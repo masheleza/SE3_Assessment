@@ -220,4 +220,38 @@ public sealed class DocumentServiceTests
         evt!.Success.Should().BeFalse();
         evt.ErrorMessage.Should().Be("disk full");
     }
+
+    // ── SeedTestStatementsAsync ──────────────────────────────────────────────
+
+    [Fact]
+    public async Task SeedTestStatementsAsync_CreatesRequestedNumberOfReadyRecords()
+    {
+        _storage.Setup(s => s.GenerateStatementAsync(It.IsAny<StatementRequestedEvent>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new byte[] { 1, 2, 3 });
+        _repository.Setup(r => r.UpsertAsync(It.IsAny<DocumentRecord>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var result = await _sut.SeedTestStatementsAsync(5);
+
+        result.Should().HaveCount(5);
+        result.Should().OnlyContain(r => r.Status == DocumentStatus.Ready);
+        result.Should().OnlyContain(r => r.StoragePath != null);
+        result.Select(r => r.Id).Should().OnlyHaveUniqueItems();
+        _repository.Verify(r => r.UpsertAsync(It.IsAny<DocumentRecord>(), It.IsAny<CancellationToken>()), Times.Exactly(5));
+    }
+
+    [Fact]
+    public async Task SeedTestStatementsAsync_CachesGeneratedContentForEachStatement()
+    {
+        _storage.Setup(s => s.GenerateStatementAsync(It.IsAny<StatementRequestedEvent>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new byte[] { 1, 2, 3 });
+        _repository.Setup(r => r.UpsertAsync(It.IsAny<DocumentRecord>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await _sut.SeedTestStatementsAsync(3);
+
+        _db.Verify(d => d.StringSetAsync(
+            It.IsAny<RedisKey>(), It.IsAny<RedisValue>(), It.IsAny<TimeSpan?>(),
+            It.IsAny<bool>(), It.IsAny<When>(), It.IsAny<CommandFlags>()), Times.Exactly(3));
+    }
 }

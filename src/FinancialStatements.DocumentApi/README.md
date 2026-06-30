@@ -156,6 +156,15 @@ dotnet run
 
 SQL Server and Redis must be running. On first start, EF Core creates and migrates the database automatically.
 
+### Seeding test data
+
+`POST /api/documents/seed?count=10` generates random `Ready` statements (default 10, max 100) for local testing. Each record is persisted and its generated content is cached in Redis, so the returned documents are immediately retrievable via `GET /api/documents/{documentId}` **without** S3/AWS. The endpoint is restricted to the `Development` environment (returns 404 otherwise).
+
+```bash
+curl -k -X POST "https://localhost:7002/api/documents/seed?count=10"
+# → [{ "documentId": "...", "status": "Ready", "downloadUrl": "/api/documents/...", "createdAt": "..." }, ...]
+```
+
 ## Running EF Core migrations manually
 
 ```bash

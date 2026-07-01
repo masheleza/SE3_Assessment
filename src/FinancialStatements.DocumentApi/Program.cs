@@ -2,6 +2,7 @@ using Amazon.S3;
 using Amazon.SQS;
 using FinancialStatements.DocumentApi.Consumers;
 using FinancialStatements.DocumentApi.Filters;
+using FinancialStatements.DocumentApi.Infrastructure;
 using FinancialStatements.DocumentApi.Infrastructure.DbContext;
 using FinancialStatements.DocumentApi.Infrastructure.Repositories;
 using FinancialStatements.DocumentApi.Services;
@@ -24,8 +25,10 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 
 // ── AWS ────────────────────────────────────────────────────────────────────────
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
-builder.Services.AddAWSService<IAmazonSQS>();
-builder.Services.AddAWSService<IAmazonS3>();
+builder.Services.AddSingleton<IAmazonSQS>(sp =>
+    AwsClientFactory.CreateSqs(sp.GetRequiredService<IConfiguration>()));
+builder.Services.AddSingleton<IAmazonS3>(sp =>
+    AwsClientFactory.CreateS3(sp.GetRequiredService<IConfiguration>()));
 
 // ── Services ──────────────────────────────────────────────────────────────────
 builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();

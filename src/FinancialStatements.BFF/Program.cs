@@ -24,7 +24,8 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 builder.Services.AddSingleton<ICacheService, RedisCacheService>();
 
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
-builder.Services.AddAWSService<IAmazonSQS>();
+builder.Services.AddSingleton<IAmazonSQS>(sp =>
+    AwsClientFactory.CreateSqs(sp.GetRequiredService<IConfiguration>()));
 builder.Services.AddSingleton<ISqsPublisher, SqsPublisher>();
 
 // ── Document API proxy ────────────────────────────────────────────────────────
